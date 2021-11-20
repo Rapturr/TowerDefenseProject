@@ -1,47 +1,65 @@
 #define SFML_STATIC
 #include <SFML/Graphics.hpp>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include "maps.h"
 
-int main()
-{
-    
-    // Create the main window
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Silnik Graficzny", sf::Style::Close | sf::Style::Titlebar | sf::Style::Resize);
-    sf::RectangleShape rectangle(sf::Vector2f(200.0f,200.0f));
+int main(){
+	WindowChoice windowChoice;
+	
+	int width = 1280;
+	int height = 720;
+	sf::Vector2u currsize;
+	sf::Event event;
+	sf::ContextSettings settings;
+	settings.antialiasingLevel = 4;
+	sf::RenderWindow window(sf::VideoMode(width,height),"Tower Defense", sf::Style::Close | sf::Style::Titlebar | sf::Style::Resize, settings);
+	window.setKeyRepeatEnabled(false);
+	window.setFramerateLimit(60);
+	windowChoice.changeMap(1);
+	windowChoice.drawMap(&window);
 
-    sf::CircleShape triangle(100.0f, 3);
+	//game loop
+	while(window.isOpen()){
+		while (window.pollEvent(event)){
+		if(event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+					window.close();
+		}
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::F)){
+			currsize = window.getSize();
+			if(currsize == sf::Vector2u(width,height)){
+				window.create(sf::VideoMode(1920,1080),"Tower Defense", sf::Style::Fullscreen, settings);
+				window.setKeyRepeatEnabled(false);
+				window.setFramerateLimit(60);
+			}
+			else{
+				window.create(sf::VideoMode(width,height),"Tower Defense", sf::Style::Close | sf::Style::Titlebar , settings);
+				window.setPosition(sf::Vector2i(0,0));
+				window.setKeyRepeatEnabled(false);
+				window.setFramerateLimit(60);
+			}
+		}
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+			windowChoice.changeMap(1);
+		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+			windowChoice.changeMap(2);
+		
+		windowChoice.drawMap(&window);
+		windowChoice.setbuttons();
 
-    sf::ConvexShape convex;
-    convex.setPointCount(3);
-    
-    // Start the game loop
-    while (window.isOpen())
-    {
-        // Process events
-        sf::Event evnt;
-        while (window.pollEvent(evnt))
-        {
-            // Close window: exit
-            if (evnt.type == evnt.Closed)
-                window.close();
-        }
-        // Clear screen
-        window.clear(sf::Color::Blue);
+		window.clear(sf::Color::Black);
 
-        triangle.setPosition(300.0f,250.0f);
-        rectangle.setPosition(100.0f, 50.0f);
-        triangle.setFillColor(sf::Color(50,150,250));
-        rectangle.setFillColor(sf::Color(150,50,250));
+		windowChoice.drawsprites(&window);
+		windowChoice.unitMenu(&window);
+		windowChoice.highlight(&window);
+		//windowChoice.renderUnits(&window);
+		//mouse input
+		if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
+			windowChoice.mouseInput(&window);
+		}
+		window.display();
+	}
 
-        convex.setPoint(0, sf::Vector2f(100.0f, 100.0f));
-        convex.setPoint(1, sf::Vector2f(200.0f, 100.0f));
-        convex.setPoint(2, sf::Vector2f(150.0f, 150.0f));
-
-        // Update the window
-        window.draw(rectangle);
-        window.draw(triangle);
-        window.draw(convex);
-
-        window.display();
-    }
-    return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }
