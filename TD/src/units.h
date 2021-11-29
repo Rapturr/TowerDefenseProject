@@ -11,6 +11,10 @@ private:
 	int posy;
 	sf::Texture texture;
 	sf::Sprite sprite;
+	bool lt = false;
+	float mapOffset = 0;
+	//0-can't move, 1-right, 2-up, 3-down, 4-left
+	int movedir = 1;
 public:
 	//flag 1 - 4 player units, 5-6 enemy units
 	Units(int flag){
@@ -50,6 +54,10 @@ public:
 		posy = positiony;
 		sprite.setTexture(texture);
 		sprite.setPosition(posx,posy);
+	}
+
+	sf::Vector2f getPos(){
+		return sprite.getPosition();
 	}
 
 	//1-right   2-down   3-left   4-up
@@ -117,8 +125,10 @@ public:
 	}
 
 	int checkiffin(){
-		if(posx > 400)
-			return 1;
+		if(posx > 400 && !lt){
+			return 0;
+			lt = true;
+		}
 		else
 			return 0;
 	}

@@ -33,6 +33,7 @@ private:
 	int cash;
 	int playerLife;
 	int placeCheck[32][18];
+
 	
 	void setmap(){
 		switch (choice)
@@ -180,6 +181,8 @@ public:
 		std::cout<<"mouse x = "<<mousepos.x<<std::endl;
 		std::cout<<"mouse y = "<<mousepos.y<<std::endl;
 		sf::Vector2f translated_pos = window->mapPixelToCoords(mousepos);
+		if(choice > 2)
+			placeTurret(mousepos);
 		
 		if(choice == 1){
 			if(spritebuttonstart.getGlobalBounds().contains(translated_pos))
@@ -201,6 +204,7 @@ public:
 					createUnits();
 					turretTex();
 					playerLife = 30;
+					
 				}
 				else if(spritebuttonmap2.getGlobalBounds().contains(translated_pos)){
 					changeMap(4);
@@ -240,6 +244,10 @@ public:
 			//if(!unitvector.empty()){
 				unitvector[i]->moveUnit(1, choice);
 				unitvector[i]->drawUnit(*window);
+				if(i < allyunitvector.size()){
+					//std::cout<<"i = "<<i<<std::endl;
+					allyunitvector[i]->drawUnit(*window);
+				}
 			//}
 			playerLife -= unitvector[i]->checkiffin();
 		}
@@ -301,6 +309,31 @@ public:
 			}
 		}
 	}
+
+	void placeTurret(sf::Vector2i mpos){
+		//sf::Vector2i mpos = sf::Mouse::getPosition();
+		sf::Vector2f tmp;
+		allyunitvector.push_back(new Units(1));
+		bool turretplaced = false;
+		if(mpos.x < 1012 && mpos.y > 70 && mpos.y < 640){
+			mpos.x = (int)mpos.x/32;
+			mpos.y = (int)mpos.y/18;
+			mpos.x = (mpos.x*32)+20;
+			mpos.y = (mpos.y*18)+2;
+			tmp.x = mpos.x;
+			tmp.y = mpos.y;
+			for(int i = 0; i < allyunitvector.size(); i++){
+				if(tmp == allyunitvector[i]->getPos()){
+					turretplaced = true;
+				}
+			}
+			if(!turretplaced){
+				std::cout<<"rysujemy x = "<<tmp.x<<"  y = "<<tmp.y<<std::endl;
+				allyunitvector[allyunitvector.size()-1]->createSprite(mpos.x, mpos.y);
+			}
+		}
+	}
+
 	void mapPlacementSetup(){
 		if(choice == 3){
 			for(int i = 0; i <= 16; i++){
