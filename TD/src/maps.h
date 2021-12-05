@@ -32,9 +32,10 @@ private:
 	sf::Text text;
 	int cash;
 	int playerLife;
+	//0-czysto, 1-droga
 	int placeCheck[32][18];
+	int offset;
 
-	
 	void setmap(){
 		switch (choice)
 		{
@@ -88,6 +89,11 @@ public:
 		text.setPosition(sf::Vector2f(700, 10));
 		text.setString("");
 		playerLife = 30;
+		for(int i = 0; i < 32; i++){
+			for(int j = 0; j<18; j++){
+				placeCheck[i][j] = 0;
+			}
+		}
 	}
 	void changeMap(int x){
 		if(x < 1 || x > 5)
