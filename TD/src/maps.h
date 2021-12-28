@@ -30,6 +30,7 @@ private:
 	sf::RectangleShape units;
 	sf::Font font;
 	sf::Text text;
+	sf::Text textmoney;
 	int cash;
 	int playerLife;
 	//0-czysto, 1-droga
@@ -89,6 +90,13 @@ public:
 		text.setFillColor(sf::Color(162,250,193));
 		text.setPosition(sf::Vector2f(700, 10));
 		text.setString("");
+
+		textmoney.setFont(font);
+		textmoney.setCharacterSize(24);
+		textmoney.setFillColor(sf::Color(162,250,193));
+		textmoney.setPosition(sf::Vector2f(700,36));
+		textmoney.setString("");
+
 		playerLife = 30;
 		for(int i = 0; i < 32; i++){
 			for(int j = 0; j<18; j++){
@@ -115,6 +123,7 @@ public:
 		if(choice != 1 && choice != 2){
 			float scalex = (float)vec.x/(float)vec2.x*8/10;
 			float scaley = (float)vec.y/(float)vec2.y*8/10;
+			std::cout<<"Skala "<<scalex<<std::endl;
 			sprite.setScale(scalex,scaley);
 			//obliczenie polozenia tekstury mapy
 			int posy = vec.y*1/10;
@@ -124,6 +133,7 @@ public:
 		else{
 			float scalex = (float)vec.x/(float)vec2.x;
 			float scaley = (float)vec.y/(float)vec2.y;
+			std::cout<<"Skalaaaaa "<<scalex<<std::endl;
 			sprite.setScale(scalex,scaley);
 		}
 	}
@@ -180,6 +190,22 @@ public:
 			window->draw(spritebuttonquit);
 			drawUnits(&window);
 			window->draw(text);
+			window->draw(textmoney);
+			drawTestMap(window);
+
+		}
+	}
+	void drawTestMap(sf::RenderWindow *window){
+		sf::RectangleShape rect;
+		rect.setSize(sf::Vector2f(40*8/10,40*8/10));
+		rect.setFillColor(sf::Color::Blue);
+		for(int i = 0; i < 32; i++){
+			for(int j = 0; j < 16; j++){
+				if(placeCheck[i][j] == 0){
+					rect.setPosition(sf::Vector2f(i*40*8/10,j*40*8/10+window->getSize().y*1/10));
+					window->draw(rect);
+				}
+			}
 		}
 	}
 	//Funkcja sprawdza, czy zostały naciśnięte przyciski
@@ -267,6 +293,9 @@ public:
 		std::string s = std::to_string(playerLife);
 		std::string str = "life: "+s;
 		text.setString(str);
+		s = std::to_string(cash);
+		str = "You have: "+s+" cash";
+		textmoney.setString(str);
 	}
 
 	void destroyUnits(){
@@ -324,7 +353,7 @@ public:
 
 	void placeTurret(sf::Vector2i mpos){
 		//sf::Vector2i mpos = sf::Mouse::getPosition();
-		if(index != 0){
+		if(index != 0 && cash > 9){
 			sf::Vector2f tmp;
 			allyunitvector.push_back(new Units(index));
 			bool turretplaced = false;
@@ -343,6 +372,7 @@ public:
 				if(!turretplaced){
 					std::cout<<"rysujemy x = "<<tmp.x<<"  y = "<<tmp.y<<std::endl;
 					allyunitvector[allyunitvector.size()-1]->createSprite(mpos.x, mpos.y);
+					cash -=10;
 				}
 			}
 			index = 0;
@@ -352,7 +382,7 @@ public:
 	void mapPlacementSetup(){
 		if(choice == 3){
 			for(int i = 0; i <= 16; i++){
-				for(int j = 0; j <= 8; j++){
+				for(int j = 0; j <= 4; j++){
 					placeCheck[i][j] = 0;
 				}
 			}
