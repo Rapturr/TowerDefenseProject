@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <thread>
 
 class Units{
 private:
@@ -10,14 +11,17 @@ private:
 	int posx;
 	int posy;
 	sf::Texture texture;
-	sf::Sprite sprite;
 	bool lt = false;
 	float mapOffset = 0;
-	//0-can't move, 1-right, 2-up, 3-down, 4-left
 	int movedir = 1;
+	bool switcher;
+	int lastx;
+	int lasty;
+	sf::Clock clock;
 public:
-	//flag 1 - 4 player units, 5-6 enemy units
+	sf::Sprite sprite;
 	Units(int flag){
+		clock.restart();
 		switch (flag)
 		{
 		case 1:
@@ -33,15 +37,15 @@ public:
 			lives = 99;
 			break;
 		case 4:
-			texture.loadFromFile("../assets/turretr.png");
+			texture.loadFromFile("../assets/tomato.png");
 			lives = 99;
 			break;
 		case 5:
-			texture.loadFromFile("../assets/carrot1.png");
+			texture.loadFromFile("../assets/carrot.png");
 			lives = 1;
 			break;
 		case 6:
-			texture.loadFromFile("../assets/carrot1.png");
+			texture.loadFromFile("../assets/potato.png");
 			lives = 3;
 			break;
 		default:
@@ -60,59 +64,66 @@ public:
 		return sprite.getPosition();
 	}
 
-	//1-right   2-down   3-left   4-up
 	void moveUnit(int direction, int map){
 		if(map == 3){
-			if(posx > 0 && posx < 159 && posy > 360 && posy < 380){
-				posx+=4;
-			}
-			if(posx > 159 && posx < 170 && posy < 380 && posy > 280){
-				posy-=4;
-			}
-			if(posx > 159 && posx < 440 && posy < 280 && posy > 260){
-				posx+=4;
-			}
-			if(posx > 419 && posx < 424 && posy < 560 && posy > 260){
-				posy+=4;
-			}
-			if(posx > 415 && posx < 480 && posy < 570 && posy > 550){
-				posx+=4;
-			}
-			if(posx > 476 && posx < 484 && posy < 570 && posy > 500){
-				posy-=4;
-			}
-			if(posx > 476 && posx < 544 && posy < 508 && posy > 490){
-				posx+=4;
-			}
-			if(posx > 543 && posx < 548 && posy < 508 && posy > 270){
-				posy-=4;
-			}
-			if(posx > 543 && posx < 632 && posy < 274 && posy > 266){
-				posx+=4;
-			}
-			if(posx > 630 && posx < 636 && posy < 274 && posy > 150){
-				posy-=4;
-			}
+			switcher = true;
+			posx = 0*(1280/32);
+			posy = 12*(720/18);
+			movHelper(5);
+			movHelper(-3);
+			movHelper(8);
+			/*movHelper(9);
+			movHelper(2);
+			movHelper(-2);
+			movHelper(2);
+			movHelper(-7);
+			movHelper(3);
+			movHelper(-4);
+			movHelper(1);
+			movHelper(-1);
+			movHelper(3);
+			movHelper(9);
+			movHelper(3);
+			movHelper(3);
+			movHelper(3);
+			movHelper(-5);
+			movHelper(1);*/
+			
 		}
-		/*switch (direction)
-		{
-		case 1:
-			posx+=4;
-			break;
-		case 2:
-			posy+=4;
-			break;
-		case 3:
-			posx-=4;
-			break;
-		case 4:
-			posy-=4;
-			break;
-		
-		default:
-			break;
-		}*/
-		sprite.setPosition(posx,posy);
+	}
+
+	void movHelper(int n){
+		n *=40;
+		if(n != 0){
+			if(!switcher){
+				if(n > 0){
+					for(int i = 0; i<n; i++){
+						posy += 1;
+					}
+				}
+				else{
+					for(int i = 0; i>n; i--){
+						posy -= 1;
+					}
+				}
+				switcher = !switcher;
+			}
+			else{
+				if(n > 0){
+					for(int i = 0; i<n; i++){
+						posx += 1;
+					}
+				}
+				else{
+					for(int i = 0; i>n; i--){
+						posx -= 1;
+					}
+				}
+				switcher = !switcher;
+			}
+			sprite.setPosition(posx,posy);
+			clock.restart();
+		}
 	}
 
 	bool hit(){

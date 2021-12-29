@@ -1,9 +1,12 @@
 #define SFML_STATIC
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
 #include "units.h"
+#include <windows.h>
+#include <mmsystem.h>
 
 class WindowChoice{
 private:
@@ -31,13 +34,18 @@ private:
 	sf::Font font;
 	sf::Text text;
 	sf::Text textmoney;
+	sf::Text textpoints;
 	int cash;
 	int playerLife;
+	int points;
 	//0-czysto, 1-droga
 	int placeCheck[32][18];
 	int offset;
 	int index = 0;
-
+	bool switcher;
+	int lastx;
+	int lasty;
+	
 	void setmap(){
 		switch (choice)
 		{
@@ -97,7 +105,17 @@ public:
 		textmoney.setPosition(sf::Vector2f(700,36));
 		textmoney.setString("");
 
+		textpoints.setFont(font);
+		textpoints.setCharacterSize(24);
+		textpoints.setFillColor(sf::Color(162,250,193));
+		textpoints.setPosition(sf::Vector2f(1000,36));
+		textpoints.setString("");
+		points = 0;
+
 		playerLife = 30;
+		zerowanieTab();
+	}
+	void zerowanieTab(){
 		for(int i = 0; i < 32; i++){
 			for(int j = 0; j<18; j++){
 				placeCheck[i][j] = 0;
@@ -121,10 +139,9 @@ public:
 		vec2 = texture.getSize();
 		//obliczanie skali
 		if(choice != 1 && choice != 2){
-			float scalex = (float)vec.x/(float)vec2.x*8/10;
-			float scaley = (float)vec.y/(float)vec2.y*8/10;
-			std::cout<<"Skala "<<scalex<<std::endl;
-			sprite.setScale(scalex,scaley);
+			//float scalex = (float)vec.x/(float)vec2.x*8/10;
+			//float scaley = (float)vec.y/(float)vec2.y*8/10;
+			sprite.setScale(1,1);
 			//obliczenie polozenia tekstury mapy
 			int posy = vec.y*1/10;
 		//zmiana pozycji
@@ -133,7 +150,6 @@ public:
 		else{
 			float scalex = (float)vec.x/(float)vec2.x;
 			float scaley = (float)vec.y/(float)vec2.y;
-			std::cout<<"Skalaaaaa "<<scalex<<std::endl;
 			sprite.setScale(scalex,scaley);
 		}
 	}
@@ -146,6 +162,8 @@ public:
 		spritebuttonmap1.setTexture(textureButtonMap1);
 		spritebuttonmap2.setTexture(textureButtonMap2);
 		spritebuttonmap3.setTexture(textureButtonMap3);
+		spritebuttonstart.setScale(0.4,0.4);
+		spritebuttonquit.setScale(0.4,0.4);
 		if(choice == 1){
 			int posx = (vec.x/8) - 100;
 			int posy = (vec.y/4) - 40;
@@ -159,19 +177,22 @@ public:
 			int posx = (vec.x/10) - 100;
 			int posy = (vec.y/5) - 140;
 			spritebuttonquit.setPosition(posx,posy);
-			spritebuttonquit.setScale(0.5,0.5);
+			spritebuttonquit.setScale(0.4,0.4);
 
 			posx = (vec.x/8);
 			posy = (vec.y/5);
 			spritebuttonmap1.setPosition(posx,posy);
 			spritebuttonmap2.setPosition(posx,posy+200);
 			spritebuttonmap3.setPosition(posx,posy+400);
+			spritebuttonmap1.setScale(0.4,0.4);
+			spritebuttonmap2.setScale(0.4,0.4);
+			spritebuttonmap3.setScale(0.4,0.4);
 		}
 		else {
 			int posx = (vec.x/10) - 100;
 			int posy = (vec.y/5) - 140;
 			spritebuttonquit.setPosition(posx,posy);
-			spritebuttonquit.setScale(0.5,0.5);
+			spritebuttonquit.setScale(0.2,0.2);
 		}
 	}
 	void drawsprites(sf::RenderWindow *window){
@@ -191,18 +212,24 @@ public:
 			drawUnits(&window);
 			window->draw(text);
 			window->draw(textmoney);
-			drawTestMap(window);
+			window->draw(textpoints);
+			//drawTestMap(window);
 
 		}
 	}
 	void drawTestMap(sf::RenderWindow *window){
 		sf::RectangleShape rect;
-		rect.setSize(sf::Vector2f(40*8/10,40*8/10));
-		rect.setFillColor(sf::Color::Blue);
+		rect.setSize(sf::Vector2f(40,40));
+		rect.setFillColor(sf::Color(20,70,200,100));
 		for(int i = 0; i < 32; i++){
-			for(int j = 0; j < 16; j++){
+			for(int j = 0; j < 18; j++){
 				if(placeCheck[i][j] == 0){
-					rect.setPosition(sf::Vector2f(i*40*8/10,j*40*8/10+window->getSize().y*1/10));
+					rect.setPosition(sf::Vector2f(i*40,j*40+window->getSize().y*1/10));
+					window->draw(rect);
+				}
+				else if(placeCheck[i][j] == 1){
+					rect.setPosition(sf::Vector2f(i*40,j*40+window->getSize().y*1/10));
+					rect.setFillColor(sf::Color(200,70,200,100));
 					window->draw(rect);
 				}
 			}
@@ -211,14 +238,15 @@ public:
 	//Funkcja sprawdza, czy zostały naciśnięte przyciski
 	void mouseInput(sf::RenderWindow *window){
 		sf::Vector2i mousepos = sf::Mouse::getPosition(*window);
-		std::cout<<"mouse x = "<<mousepos.x<<std::endl;
-		std::cout<<"mouse y = "<<mousepos.y<<std::endl;
+		//std::cout<<"mouse x = "<<mousepos.x<<std::endl;
+		//std::cout<<"mouse y = "<<mousepos.y<<std::endl;
+		
 		sf::Vector2f translated_pos = window->mapPixelToCoords(mousepos);
 		if(choice > 2){
 			placeTurret(mousepos);
 			if(unitTurret1.getGlobalBounds().contains(translated_pos)){
 				index = 1;
-				std::cout<<"kliklo\n";
+				//std::cout<<"kliklo\n";
 			}
 		}
 		
@@ -233,8 +261,10 @@ public:
 				/*if(choice != 2){
 					//destroyUnits();
 				}*/
+				destroyAllyUnits();
 				changeMap(1);
 				spritebuttonquit.scale(2,2);
+				zerowanieTab();
 			}
 			if(choice == 2){
 				if(spritebuttonmap1.getGlobalBounds().contains(translated_pos)){
@@ -242,27 +272,33 @@ public:
 					createUnits();
 					turretTex();
 					playerLife = 30;
-					
+					mapPlacementSetup();
+					moveallyunits();
 				}
 				else if(spritebuttonmap2.getGlobalBounds().contains(translated_pos)){
 					changeMap(4);
 					createUnits();
 					turretTex();
 					playerLife = 30;
+					mapPlacementSetup();
+					moveallyunits();
 				}
 				else if(spritebuttonmap3.getGlobalBounds().contains(translated_pos)){
 					changeMap(5);
 					createUnits();
 					turretTex();
 					playerLife = 30;
+					mapPlacementSetup();
+					moveallyunits();
 				}
+				
 			}
 		}
 	}
 	void turretTex(){
 		turrettexture.loadFromFile("../assets/turretf.png");
 		unitTurret1.setTexture(turrettexture);
-		unitTurret1.setPosition(1224,500);
+		unitTurret1.setPosition(1350,500);
 		unitTurret1.setScale(2,2);
 	}
 	void createUnits(){
@@ -274,13 +310,17 @@ public:
 		}
 	}
 
-
-	void drawUnits(sf::RenderWindow **window){
-		int random = std::rand() % 300;
-		int random1 = (std::rand() % 4)+1;
+	void moveallyunits(){
 		for(int i = 0; i < 300; i++){
 			//if(!unitvector.empty()){
 				unitvector[i]->moveUnit(1, choice);
+		}
+	}
+	void drawUnits(sf::RenderWindow **window){
+		/*int random = std::rand() % 300;
+		int random1 = (std::rand() % 4)+1;*/
+		for(int i = 0; i < 300; i++){
+			//if(!unitvector.empty()){
 				unitvector[i]->drawUnit(*window);
 				if(i < allyunitvector.size()){
 					//std::cout<<"i = "<<i<<std::endl;
@@ -294,8 +334,11 @@ public:
 		std::string str = "life: "+s;
 		text.setString(str);
 		s = std::to_string(cash);
-		str = "You have: "+s+" cash";
+		str = "You have: "+s+" $";
 		textmoney.setString(str);
+		s = std::to_string(points);
+		str = "You have: "+s+" points";
+		textpoints.setString(str);
 	}
 
 	void destroyUnits(){
@@ -305,14 +348,21 @@ public:
 			std::cout<<"unit: "<<i<<" destroyed"<<std::endl;
 		}
 		cash += 10;
+		points += 10;
+	}
+
+	void destroyAllyUnits(){
+		for(int i = 0; i < allyunitvector.size(); i++){
+			delete allyunitvector[i];
+		}
 	}
 
 	void unitMenu(sf::RenderWindow *window){
 		if(choice > 2){
-			if(units.getPosition().x != 1024){
-				units.setPosition(sf::Vector2f(1024,0));
-				units.setSize(sf::Vector2f((window->getSize().x-1024),window->getSize().y));
-				units.setFillColor(sf::Color::Red);
+			if(units.getPosition().x != 1300){
+				units.setPosition(sf::Vector2f(1300,0));
+				units.setSize(sf::Vector2f((window->getSize().x-1300),window->getSize().y));
+				units.setFillColor(sf::Color(10,10,10));
 			}
 			window->draw(units);
 			window->draw(unitTurret1);
@@ -320,32 +370,31 @@ public:
 	}
 
 	void highlight(sf::RenderWindow *window){
-		int offsetx;
-		int offsety = 0;
 
 		if(choice > 2){
 			sf::Vector2i mpos = sf::Mouse::getPosition(*window);
-			if(mpos.x<1024 && mpos.y>70 && mpos.y < 640){
-				mpos.x = (int)mpos.x/32;
-				mpos.y = (int)mpos.y/18;
-				//mpos.x = (mpos.x*32)+20;
-				//mpos.y = (mpos.y*18)+2;
-
-				mpos.x = (mpos.x*32)+20;
-				mpos.y = (mpos.y*18)+2;
+			if(mpos.x<1260 && mpos.y>100 && mpos.y < 780){
+				mpos.x = (int)mpos.x/(1280/32);
+				mpos.y = (int)mpos.y/(720/18);
+				
+				mpos.x = (mpos.x*(1280/32));
+				mpos.y = (mpos.y*(720/18));
 
 				sf::VertexArray array(sf::LinesStrip, 5);
-				array[0].position = sf::Vector2f((mpos.x)-20,(mpos.y)-20+offsety);
-				array[1].position = sf::Vector2f((mpos.x)+20,(mpos.y)-20+offsety);
-				array[2].position = sf::Vector2f((mpos.x)+20,(mpos.y)+20+offsety);
-				array[3].position = sf::Vector2f((mpos.x)-20,(mpos.y)+20+offsety);
+				array[0].position = sf::Vector2f((mpos.x),(mpos.y));
+				array[1].position = sf::Vector2f((mpos.x)+40,(mpos.y));
+				array[2].position = sf::Vector2f((mpos.x)+40,(mpos.y)+40);
+				array[3].position = sf::Vector2f((mpos.x),(mpos.y)+40);
 				array[4].position = array[0].position;
 				array[0].color = sf::Color(sf::Color::Green);
 				array[1].color = sf::Color(sf::Color::Magenta);
 				array[2].color = sf::Color(sf::Color::Green);
 				array[3].color = sf::Color(sf::Color::Magenta);
 				array[4].color = sf::Color(sf::Color::Green);
-
+				if(sf::Mouse::isButtonPressed(sf::Mouse::Right)){
+					std::cout<<"placecheck x:"<<(int)mpos.x/(1280/32)<<"   y: "<<(int)mpos.y/(720/18)<<placeCheck[(int)mpos.x/(1280/32)][(int)mpos.y/(720/18)]<<"\n";
+				}
+				
 				window->draw(array);
 			}
 		}
@@ -357,22 +406,24 @@ public:
 			sf::Vector2f tmp;
 			allyunitvector.push_back(new Units(index));
 			bool turretplaced = false;
-			if(mpos.x < 1012 && mpos.y > 70 && mpos.y < 640){
-				mpos.x = (int)mpos.x/32;
-				mpos.y = (int)mpos.y/18;
-				mpos.x = (mpos.x*32)+20;
-				mpos.y = (mpos.y*18)+2;
+			if(mpos.x<1260 && mpos.y>100 && mpos.y < 780){
+				mpos.x = (int)mpos.x/(1280/32);
+				mpos.y = (int)mpos.y/(720/18);
+				mpos.x = (mpos.x*(1280/32));
+				mpos.y = (mpos.y*(720/18));
 				tmp.x = mpos.x;
 				tmp.y = mpos.y;
-				for(int i = 0; i < allyunitvector.size(); i++){
-					if(tmp == allyunitvector[i]->getPos()){
-						turretplaced = true;
+				std::cout<<"placecheck x:"<<(int)mpos.x/(1280/32)<<"   y: "<<(int)mpos.y/(720/18)<<"    =   "<<placeCheck[(int)mpos.x/(1280/32)][(int)mpos.y/(720/18)]<<"\n";
+				if(placeCheck[(int)tmp.x/(1280/32)][(int)tmp.y/(720/18)]==0){
+					for(int i = 0; i < allyunitvector.size(); i++){
+						if(tmp == allyunitvector[i]->getPos()){
+							turretplaced = true;
+						}
 					}
-				}
-				if(!turretplaced){
-					std::cout<<"rysujemy x = "<<tmp.x<<"  y = "<<tmp.y<<std::endl;
-					allyunitvector[allyunitvector.size()-1]->createSprite(mpos.x, mpos.y);
-					cash -=10;
+					if(!turretplaced){
+						allyunitvector[allyunitvector.size()-1]->createSprite(mpos.x, mpos.y);
+						cash -=10;
+					}
 				}
 			}
 			index = 0;
@@ -381,11 +432,119 @@ public:
 
 	void mapPlacementSetup(){
 		if(choice == 3){
-			for(int i = 0; i <= 16; i++){
-				for(int j = 0; j <= 4; j++){
-					placeCheck[i][j] = 0;
+			switcher = true;
+			lastx = 0;
+			lasty = 12;
+			pcHelper(5);
+			pcHelper(-3);
+			pcHelper(8);
+			pcHelper(9);
+			pcHelper(2);
+			pcHelper(-2);
+			pcHelper(2);
+			pcHelper(-7);
+			pcHelper(3);
+			pcHelper(-4);
+			pcHelper(1);
+			pcHelper(-1);
+			pcHelper(3);
+			pcHelper(9);
+			pcHelper(3);
+			pcHelper(3);
+			pcHelper(3);
+			pcHelper(-5);
+			pcHelper(1);
+			placeCheck[lastx][lasty] = 1;
+		}
+		else if(choice == 4){
+			switcher = false;
+			lastx = 5;
+			lasty = 2;
+			pcHelper(5);
+			pcHelper(-3);
+			pcHelper(10);
+			pcHelper(4);
+			pcHelper(-5);
+			pcHelper(3);
+			pcHelper(-3);
+			pcHelper(3);
+			pcHelper(3);
+			pcHelper(3);
+			pcHelper(5);
+			pcHelper(4);
+			pcHelper(-10);
+			pcHelper(-3);
+			pcHelper(-3);
+			pcHelper(7);
+			pcHelper(7);
+			pcHelper(3);
+			pcHelper(5);
+			pcHelper(3);
+			pcHelper(-3);
+			pcHelper(2);
+			placeCheck[lastx][lasty] = 1;
+		}
+		else if(choice == 5){
+			switcher = true;
+			lastx = 0;
+			lasty = 5;
+			pcHelper(7);
+			pcHelper(10);
+			pcHelper(3);
+			pcHelper(-5);
+			pcHelper(2);
+			pcHelper(3);
+			pcHelper(3);
+			pcHelper(-6);
+			pcHelper(1);
+			pcHelper(-1);
+			pcHelper(2);
+			pcHelper(-2);
+			pcHelper(3);
+			pcHelper(13);
+			pcHelper(4);
+			pcHelper(-4);
+			pcHelper(2);
+			pcHelper(-4);
+			pcHelper(3);
+			pcHelper(-5);
+			pcHelper(1);
+			placeCheck[lastx][lasty] = 1;
+		}
+	}
+
+	void pcHelper(int n){
+		if(n != 0){
+			if(!switcher){
+				if(n > 0){
+					for(int i = 0; i<n; i++){
+						placeCheck[lastx][lasty] = 1;
+						lasty += 1;
+					}
 				}
+				else{
+					for(int i = 0; i>n; i--){
+						placeCheck[lastx][lasty] = 1;
+						lasty -= 1;
+					}
+				}
+				switcher = !switcher;
+			}
+			else{
+				if(n > 0){
+					for(int i = 0; i<n; i++){
+						placeCheck[lastx][lasty] = 1;
+						lastx += 1;
+					}
+				}
+				else{
+					for(int i = 0; i>n; i--){
+						placeCheck[lastx][lasty] = 1;
+						lastx -= 1;
+					}
+				}
+				switcher = !switcher;
 			}
 		}
-	};
+	}
 };

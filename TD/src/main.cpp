@@ -7,9 +7,10 @@
 
 int main(){
 	WindowChoice windowChoice;
-	
-	int width = 1280;
-	int height = 720;
+	PlaySound(TEXT("../assets/Sounds/BG.wav"),NULL,SND_ASYNC);
+
+	int width = 1500;
+	int height = 820;
 	sf::Vector2u currsize;
 	sf::Event event;
 	sf::ContextSettings settings;
@@ -19,14 +20,17 @@ int main(){
 	window.setFramerateLimit(60);
 	windowChoice.changeMap(1);
 	windowChoice.drawMap(&window);
-
-	//game loop
+	sf::Clock myclock;
+	myclock.restart();
 	while(window.isOpen()){
+		if((int)myclock.getElapsedTime().asSeconds() % 177 == 0){
+			PlaySound(TEXT("../assets/Sounds/BG.wav"),NULL,SND_ASYNC);
+		}
 		while (window.pollEvent(event)){
 		if(event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 					window.close();
 		}
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::F)){
+		/*if(sf::Keyboard::isKeyPressed(sf::Keyboard::F)){
 			currsize = window.getSize();
 			if(currsize == sf::Vector2u(width,height)){
 				window.create(sf::VideoMode(1920,1080),"Tower Defense", sf::Style::Fullscreen, settings);
@@ -39,11 +43,8 @@ int main(){
 				window.setKeyRepeatEnabled(false);
 				window.setFramerateLimit(60);
 			}
-		}
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
-			windowChoice.changeMap(1);
-		if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
-			windowChoice.changeMap(2);
+		}*/
+		
 		
 		windowChoice.drawMap(&window);
 		windowChoice.setbuttons();
