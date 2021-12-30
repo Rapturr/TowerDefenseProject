@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <thread>
+#include <SFML/Audio.hpp>
 
 class Units{
 private:
@@ -16,12 +17,17 @@ private:
 	float mapOffset = 0;
 	int movedir = 1;
 	bool switcher;
+	//1-carrot,2-tomato,3-potato
+	int type;
 	int lastx;
 	int lasty;
+	//sf::Music music;
 	sf::Clock clock;
 	std::vector<char> moves;
 	int currentmove;
 	bool exists;
+	sf::SoundBuffer sb;
+	sf::Sound sound;
 public:
 	sf::Sprite sprite;
 	Units(int flag){
@@ -44,19 +50,25 @@ public:
 		case 4:
 			texture.loadFromFile("../assets/tomato.png");
 			lives = 5;
+			sb.loadFromFile("../assets/Sounds/TOMATO.wav");
+			sound.setVolume(50);
 			break;
 		case 5:
 			texture.loadFromFile("../assets/carrot.png");
 			lives = 1;
+			sb.loadFromFile("../assets/Sounds/CARROT.wav");
 			break;
 		case 6:
 			texture.loadFromFile("../assets/potato.png");
 			lives = 3;
+			sb.loadFromFile("../assets/Sounds/POTATO.wav");
+			sound.setVolume(70);
 			break;
 		default:
 			break;
 		}
 		currentmove = 0;
+		sound.setBuffer(sb);
 	}
 
 	void createSprite(int positionx, int positiony){
@@ -258,6 +270,7 @@ public:
 			return 0;
 	}
 	void disappear(){
+		sound.play();
 		exists = false;
 		posx = 0;
 		posy = 0;

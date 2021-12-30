@@ -362,6 +362,14 @@ public:
             for(int i = 0;i<bulletvector.size();i++){
                 bulletvector[i].drawUnit(window);
             }
+			if(playerLife < 1){
+				spritebuttonquit.scale(2,2);
+				changeMap(1);
+				zerowanieTab();
+				playerLife = 30;
+				destroyAllyUnits();
+				destroyUnits();
+			}
 		}
 		std::string s = std::to_string(playerLife);
 		std::string str = "life: "+s;

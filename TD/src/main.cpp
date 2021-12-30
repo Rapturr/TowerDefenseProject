@@ -7,8 +7,13 @@
 
 int main(){
 	WindowChoice windowChoice;
-	PlaySound(TEXT("../assets/Sounds/BG.wav"),NULL,SND_ASYNC);
-
+	sf::Music music;
+	if (!music.openFromFile("../assets/Sounds/BG.wav")){
+		std::cout<<"Error";
+	}
+	music.setLoop(true);
+	music.setVolume(60);
+	music.play();
 	int width = 1500;
 	int height = 820;
 	sf::Vector2u currsize;
@@ -21,11 +26,7 @@ int main(){
 	windowChoice.changeMap(1);
 	windowChoice.drawMap(&window);
 	sf::Clock myclock;
-	myclock.restart();
 	while(window.isOpen()){
-		if((int)myclock.getElapsedTime().asSeconds() % 177 == 0){
-			PlaySound(TEXT("../assets/Sounds/BG.wav"),NULL,SND_ASYNC);
-		}
 		while (window.pollEvent(event)){
 		if(event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 					window.close();
