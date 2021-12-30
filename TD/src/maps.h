@@ -434,7 +434,6 @@ public:
 		//sf::Vector2i mpos = sf::Mouse::getPosition();
 		if(index != 0 && cash > 9){
 			sf::Vector2f tmp;
-            allyunitvector.push_back(new towers(1,sf::Vector2f(0,0)));
 			bool turretplaced = false;
 			if(mpos.x<1260 && mpos.y>100 && mpos.y < 780){
 				mpos.x = (int)mpos.x/(1280/32);
@@ -451,6 +450,7 @@ public:
 						}
 					}
 					if(!turretplaced){
+            			allyunitvector.push_back(new towers(1,sf::Vector2f(0,0)));
                         sf::Vector2f mposf;
                         mposf.x = (float)mpos.x;
                         mposf.y = (float)mpos.y;
