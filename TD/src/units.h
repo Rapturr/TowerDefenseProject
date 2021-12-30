@@ -10,6 +10,7 @@ private:
 	int lives;
 	int posx;
 	int posy;
+	int currentmap;
 	sf::Texture texture;
 	bool lt = false;
 	float mapOffset = 0;
@@ -18,10 +19,14 @@ private:
 	int lastx;
 	int lasty;
 	sf::Clock clock;
+	std::vector<char> moves;
+	int currentmove;
+	bool exists;
 public:
 	sf::Sprite sprite;
 	Units(int flag){
 		clock.restart();
+		exists = true;
 		switch (flag)
 		{
 		case 1:
@@ -38,7 +43,7 @@ public:
 			break;
 		case 4:
 			texture.loadFromFile("../assets/tomato.png");
-			lives = 99;
+			lives = 5;
 			break;
 		case 5:
 			texture.loadFromFile("../assets/carrot.png");
@@ -51,6 +56,7 @@ public:
 		default:
 			break;
 		}
+		currentmove = 0;
 	}
 
 	void createSprite(int positionx, int positiony){
@@ -59,20 +65,31 @@ public:
 		sprite.setTexture(texture);
 		sprite.setPosition(posx,posy);
 	}
+	void createSprite(){
+		sprite.setTexture(texture);
+		sprite.setPosition(0,0);
+	}
 
 	sf::Vector2f getPos(){
 		return sprite.getPosition();
 	}
 
-	void moveUnit(int direction, int map){
+	void clearMoves(){
+		currentmove = 0;
+		moves.clear();
+	}
+
+	void fillMoveTab(int direction, int map){
+		currentmap = map;
 		if(map == 3){
 			switcher = true;
 			posx = 0*(1280/32);
 			posy = 12*(720/18);
+			sprite.setPosition(posx,posy);
 			movHelper(5);
 			movHelper(-3);
 			movHelper(8);
-			/*movHelper(9);
+			movHelper(9);
 			movHelper(2);
 			movHelper(-2);
 			movHelper(2);
@@ -87,23 +104,98 @@ public:
 			movHelper(3);
 			movHelper(3);
 			movHelper(-5);
-			movHelper(1);*/
-			
+			movHelper(1);
+		}
+		else if(map == 4){
+			switcher = false;
+			posx = 5*(1280/32);
+			posy = 2*(720/18);
+			sprite.setPosition(posx,posy);
+			movHelper(5);
+			movHelper(-3);
+			movHelper(10);
+			movHelper(4);
+			movHelper(-5);
+			movHelper(3);
+			movHelper(-3);
+			movHelper(3);
+			movHelper(3);
+			movHelper(3);
+			movHelper(5);
+			movHelper(4);
+			movHelper(-10);
+			movHelper(-3);
+			movHelper(-3);
+			movHelper(7);
+			movHelper(7);
+			movHelper(3);
+			movHelper(5);
+			movHelper(3);
+			movHelper(-3);
+			movHelper(2);
+		}
+		else if(map == 5){
+			switcher = true;
+			posx = 0*(1280/32);
+			posy = 5*(720/18);
+			sprite.setPosition(posx,posy);
+			movHelper(7);
+			movHelper(10);
+			movHelper(3);
+			movHelper(-5);
+			movHelper(2);
+			movHelper(3);
+			movHelper(3);
+			movHelper(-6);
+			movHelper(1);
+			movHelper(-1);
+			movHelper(2);
+			movHelper(-2);
+			movHelper(3);
+			movHelper(13);
+			movHelper(4);
+			movHelper(-4);
+			movHelper(2);
+			movHelper(-4);
+			movHelper(3);
+			movHelper(-5);
+			movHelper(1);
 		}
 	}
-
+	void moveUnits(){
+		if(clock.getElapsedTime().asMilliseconds() >= 25){
+			if(moves[currentmove] == 'r'){
+				posx += 4;
+				currentmove++;
+			}
+			else if(moves[currentmove]=='l'){
+				posx -= 4;
+				currentmove++;
+			}
+			else if(moves[currentmove]=='d'){
+				posy += 4;
+				currentmove++;
+			}
+			else if(moves[currentmove]=='u'){
+				posy -= 4;
+				currentmove++;
+			}
+			sprite.setPosition(posx,posy);
+			clock.restart();
+		}
+	}
 	void movHelper(int n){
-		n *=40;
+		n *=10;
 		if(n != 0){
 			if(!switcher){
 				if(n > 0){
 					for(int i = 0; i<n; i++){
-						posy += 1;
+						moves.push_back('d');
 					}
 				}
 				else{
 					for(int i = 0; i>n; i--){
-						posy -= 1;
+						moves.push_back('u');
 					}
 				}
 				switcher = !switcher;
@@ -111,24 +203,23 @@ public:
 			else{
 				if(n > 0){
 					for(int i = 0; i<n; i++){
-						posx += 1;
+						moves.push_back('r');
 					}
 				}
 				else{
 					for(int i = 0; i>n; i--){
-						posx -= 1;
+						moves.push_back('l');
 					}
 				}
 				switcher = !switcher;
 			}
-			sprite.setPosition(posx,posy);
-			clock.restart();
 		}
 	}
 
 	bool hit(){
 		lives--;
 		if(lives <= 0){
+			disappear();
 			texture.~Texture();
 			return false;
 		}
@@ -136,16 +227,44 @@ public:
 	}
 
 	int checkiffin(){
-		if(posx > 400 && !lt){
-			return 0;
-			lt = true;
+		/*if(posx > 1200){
+			std::cout<<"position x: "<<posx<<"  y: "<<posy<<std::endl;
+		}*/
+		if(currentmap == 3){
+			if(posx == 31*(1280/32) && posy == 11*(720/18) && !lt){
+				lt = true;
+				return 1;
+			}
+			else
+				return 0;
+		}
+		else if(currentmap == 4){
+			if(posx == 31*(1280/32) && posy == 13*(720/18) && !lt){
+				lt = true;
+				return 1;
+			}
+			else
+				return 0;
+		}
+		else if(currentmap == 5){
+			if(posx == 31*(1280/32) && posy == 4*(720/18) && !lt){
+				lt = true;
+				return 1;
+			}
+			else
+				return 0;
 		}
 		else
 			return 0;
 	}
-
+	void disappear(){
+		exists = false;
+		posx = 0;
+		posy = 0;
+	}
 	void drawUnit(sf::RenderWindow *window){
-		window->draw(sprite);
+		if(exists)
+			window->draw(sprite);
 	}
 	~Units() {};
 };

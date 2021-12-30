@@ -23,37 +23,22 @@ int main(){
 	sf::Clock myclock;
 	myclock.restart();
 	while(window.isOpen()){
-		if((int)myclock.getElapsedTime().asSeconds() % 177 == 0){
+		if((int)myclock.getElapsedTime().asSeconds() % 177 >= 0){
 			PlaySound(TEXT("../assets/Sounds/BG.wav"),NULL,SND_ASYNC);
 		}
 		while (window.pollEvent(event)){
 		if(event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 					window.close();
 		}
-		/*if(sf::Keyboard::isKeyPressed(sf::Keyboard::F)){
-			currsize = window.getSize();
-			if(currsize == sf::Vector2u(width,height)){
-				window.create(sf::VideoMode(1920,1080),"Tower Defense", sf::Style::Fullscreen, settings);
-				window.setKeyRepeatEnabled(false);
-				window.setFramerateLimit(60);
-			}
-			else{
-				window.create(sf::VideoMode(width,height),"Tower Defense", sf::Style::Close | sf::Style::Titlebar , settings);
-				window.setPosition(sf::Vector2i(0,0));
-				window.setKeyRepeatEnabled(false);
-				window.setFramerateLimit(60);
-			}
-		}*/
-		
-		
 		windowChoice.drawMap(&window);
 		windowChoice.setbuttons();
 
 		window.clear(sf::Color::Black);
-
+		windowChoice.dosomething();
 		windowChoice.drawsprites(&window);
 		windowChoice.unitMenu(&window);
 		windowChoice.highlight(&window);
+
 		//windowChoice.renderUnits(&window);
 		//mouse input
 		if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){

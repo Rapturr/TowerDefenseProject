@@ -19,6 +19,7 @@ private:
 	sf::Texture textureButtonMap1;
 	sf::Texture textureButtonMap2;
 	sf::Texture textureButtonMap3;
+
 	sf::Sprite sprite;
 	sf::Sprite spritebuttonstart;
 	sf::Sprite spritebuttonquit;
@@ -26,15 +27,20 @@ private:
 	sf::Sprite spritebuttonmap2;
 	sf::Sprite spritebuttonmap3;
 	sf::Sprite unitTurret1;
+
 	sf::Vector2u vec2;
 	sf::Vector2u vec;
+
 	std::vector<Units*> unitvector;
 	std::vector<Units*> allyunitvector;
+
 	sf::RectangleShape units;
+
 	sf::Font font;
 	sf::Text text;
 	sf::Text textmoney;
 	sf::Text textpoints;
+
 	int cash;
 	int playerLife;
 	int points;
@@ -45,6 +51,10 @@ private:
 	bool switcher;
 	int lastx;
 	int lasty;
+	int unitIt;
+
+	sf::Clock myclock;
+	sf::Clock tmpclock;
 	
 	void setmap(){
 		switch (choice)
@@ -78,17 +88,29 @@ private:
 		textureButtonMap3.loadFromFile("../assets/mapbutton3.png");
 	}
 	void workUnits(){
-		for(int i = 0; i < 300; i++){
 			//if(!unitvector.empty()){
 				if(choice == 3)
-					unitvector[i]->createSprite(4,370);
+					unitvector[unitIt]->createSprite();
 				else if(choice == 4)
-					unitvector[i]->createSprite(300,300);
+					unitvector[unitIt]->createSprite();
 				else if(choice == 5)
-					unitvector[i]->createSprite(300,300);
+					unitvector[unitIt]->createSprite();
+				unitIt++;
 				//unitvector[i]->moveUnit(1);
 			//}
+	}
+	void moveemyunits(){
+		if(unitIt > 0){
+			for(int i = 0; i < unitIt-1; i++){
+				//if(!unitvector.empty()){
+				unitvector[i]->moveUnits();
+			}
+				
 		}
+	}
+	void createemyunits(){
+			//if(!unitvector.empty()){
+			unitvector[unitIt-1]->fillMoveTab(1, choice);
 	}
 public:
 	WindowChoice(){
@@ -113,6 +135,7 @@ public:
 		points = 0;
 
 		playerLife = 30;
+		
 		zerowanieTab();
 	}
 	void zerowanieTab(){
@@ -146,6 +169,9 @@ public:
 			int posy = vec.y*1/10;
 		//zmiana pozycji
 			sprite.setPosition(0.0f,(float)posy);
+			if(tmpclock.getElapsedTime().asSeconds() > 6){
+				moveemyunits();
+			}
 		}
 		else{
 			float scalex = (float)vec.x/(float)vec2.x;
@@ -209,7 +235,7 @@ public:
 		}
 		else{
 			window->draw(spritebuttonquit);
-			drawUnits(&window);
+			drawUnits(window);
 			window->draw(text);
 			window->draw(textmoney);
 			window->draw(textpoints);
@@ -258,41 +284,44 @@ public:
 		}
 		else if(choice != 1){
 			if(spritebuttonquit.getGlobalBounds().contains(translated_pos)){
-				/*if(choice != 2){
-					//destroyUnits();
-				}*/
+				spritebuttonquit.scale(2,2);
+				destroyUnits();
 				destroyAllyUnits();
 				changeMap(1);
-				spritebuttonquit.scale(2,2);
 				zerowanieTab();
 			}
 			if(choice == 2){
 				if(spritebuttonmap1.getGlobalBounds().contains(translated_pos)){
+					unitIt = 0;
+					tmpclock.restart();
 					changeMap(3);
-					createUnits();
 					turretTex();
 					playerLife = 30;
 					mapPlacementSetup();
-					moveallyunits();
 				}
 				else if(spritebuttonmap2.getGlobalBounds().contains(translated_pos)){
+					unitIt = 0;
+					tmpclock.restart();
 					changeMap(4);
-					createUnits();
 					turretTex();
 					playerLife = 30;
 					mapPlacementSetup();
-					moveallyunits();
 				}
 				else if(spritebuttonmap3.getGlobalBounds().contains(translated_pos)){
+					unitIt = 0;
+					tmpclock.restart();
 					changeMap(5);
-					createUnits();
 					turretTex();
 					playerLife = 30;
 					mapPlacementSetup();
-					moveallyunits();
 				}
 				
 			}
+		}
+	}
+	void dosomething(){
+		if(choice > 2 && tmpclock.getElapsedTime().asSeconds()>=6){
+			createUnits();
 		}
 	}
 	void turretTex(){
@@ -303,33 +332,31 @@ public:
 	}
 	void createUnits(){
 		if(choice > 2){
-			for(int i = 0; i < 300; i++){
-				unitvector.push_back(new Units(5));
+			if(myclock.getElapsedTime().asMilliseconds() > 500 && unitIt < 300){
+				myclock.restart();
+				unitvector.push_back(new Units(rand()%3+4));
+				workUnits();
+				createemyunits();
 			}
-			workUnits();
 		}
 	}
 
-	void moveallyunits(){
-		for(int i = 0; i < 300; i++){
-			//if(!unitvector.empty()){
-				unitvector[i]->moveUnit(1, choice);
-		}
-	}
-	void drawUnits(sf::RenderWindow **window){
-		/*int random = std::rand() % 300;
-		int random1 = (std::rand() % 4)+1;*/
-		for(int i = 0; i < 300; i++){
-			//if(!unitvector.empty()){
-				unitvector[i]->drawUnit(*window);
-				if(i < allyunitvector.size()){
-					//std::cout<<"i = "<<i<<std::endl;
-					allyunitvector[i]->drawUnit(*window);
+	void drawUnits(sf::RenderWindow *window){
+		if(unitIt > 0){
+			for(int i = 0; i < unitIt-1; i++){
+				//if(!unitvector.empty()){
+					unitvector[i]->drawUnit(window);
+					if(i < allyunitvector.size()){
+						allyunitvector[i]->drawUnit(window);
+					}
+				//}
+				int dmg = unitvector[i]->checkiffin();
+				if(dmg >=1){
+					playerLife -= dmg;
+					unitvector[i]->disappear();
 				}
-			//}
-			playerLife -= unitvector[i]->checkiffin();
+			}
 		}
-		//text.setString("Life: %d",playerLife);
 		std::string s = std::to_string(playerLife);
 		std::string str = "life: "+s;
 		text.setString(str);
@@ -342,13 +369,11 @@ public:
 	}
 
 	void destroyUnits(){
-		for(int i = 0; i < 300; i++){
+		for(int i = 0; i < unitvector.size(); i++){
 			delete unitvector[i];
 			//unitvector.erase(unitvector.begin()+i);
-			std::cout<<"unit: "<<i<<" destroyed"<<std::endl;
 		}
-		cash += 10;
-		points += 10;
+		unitvector.resize(0);
 	}
 
 	void destroyAllyUnits(){
@@ -391,9 +416,7 @@ public:
 				array[2].color = sf::Color(sf::Color::Green);
 				array[3].color = sf::Color(sf::Color::Magenta);
 				array[4].color = sf::Color(sf::Color::Green);
-				if(sf::Mouse::isButtonPressed(sf::Mouse::Right)){
-					std::cout<<"placecheck x:"<<(int)mpos.x/(1280/32)<<"   y: "<<(int)mpos.y/(720/18)<<placeCheck[(int)mpos.x/(1280/32)][(int)mpos.y/(720/18)]<<"\n";
-				}
+				
 				
 				window->draw(array);
 			}
