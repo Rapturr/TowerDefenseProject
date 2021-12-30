@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
-#include "units.h"
+//#include "units.h"
+#include "towers.h"
 #include <windows.h>
 #include <mmsystem.h>
 
@@ -32,7 +33,8 @@ private:
 	sf::Vector2u vec;
 
 	std::vector<Units*> unitvector;
-	std::vector<Units*> allyunitvector;
+	std::vector<towers*> allyunitvector;
+    std::vector<bullets> bulletvector;
 
 	sf::RectangleShape units;
 
@@ -342,13 +344,14 @@ public:
 	}
 
 	void drawUnits(sf::RenderWindow *window){
+		for(int  i = 0; i<allyunitvector.size();i++){
+			allyunitvector[i]->drawUnit(window);
+		}
 		if(unitIt > 0){
 			for(int i = 0; i < unitIt-1; i++){
 				//if(!unitvector.empty()){
 					unitvector[i]->drawUnit(window);
-					if(i < allyunitvector.size()){
-						allyunitvector[i]->drawUnit(window);
-					}
+
 				//}
 				int dmg = unitvector[i]->checkiffin();
 				if(dmg >=1){
@@ -356,6 +359,9 @@ public:
 					unitvector[i]->disappear();
 				}
 			}
+            for(int i = 0;i<bulletvector.size();i++){
+                bulletvector[i].drawUnit(window);
+            }
 		}
 		std::string s = std::to_string(playerLife);
 		std::string str = "life: "+s;
@@ -380,6 +386,7 @@ public:
 		for(int i = 0; i < allyunitvector.size(); i++){
 			delete allyunitvector[i];
 		}
+		allyunitvector.resize(0);
 	}
 
 	void unitMenu(sf::RenderWindow *window){
@@ -427,7 +434,7 @@ public:
 		//sf::Vector2i mpos = sf::Mouse::getPosition();
 		if(index != 0 && cash > 9){
 			sf::Vector2f tmp;
-			allyunitvector.push_back(new Units(index));
+            allyunitvector.push_back(new towers(1,sf::Vector2f(0,0)));
 			bool turretplaced = false;
 			if(mpos.x<1260 && mpos.y>100 && mpos.y < 780){
 				mpos.x = (int)mpos.x/(1280/32);
@@ -439,12 +446,20 @@ public:
 				std::cout<<"placecheck x:"<<(int)mpos.x/(1280/32)<<"   y: "<<(int)mpos.y/(720/18)<<"    =   "<<placeCheck[(int)mpos.x/(1280/32)][(int)mpos.y/(720/18)]<<"\n";
 				if(placeCheck[(int)tmp.x/(1280/32)][(int)tmp.y/(720/18)]==0){
 					for(int i = 0; i < allyunitvector.size(); i++){
-						if(tmp == allyunitvector[i]->getPos()){
+						if(tmp == allyunitvector[i]->position){
 							turretplaced = true;
 						}
 					}
 					if(!turretplaced){
-						allyunitvector[allyunitvector.size()-1]->createSprite(mpos.x, mpos.y);
+                        sf::Vector2f mposf;
+                        mposf.x = (float)mpos.x;
+                        mposf.y = (float)mpos.y;
+
+						allyunitvector[allyunitvector.size()-1]->sprite.setPosition(mposf);
+
+                        mposf.x = (float)mpos.x - 25;
+                        mposf.y = (float)mpos.y - 25;
+                        allyunitvector[allyunitvector.size()-1]->collisionArea.setPosition(mposf);
 						cash -=10;
 					}
 				}
@@ -570,4 +585,12 @@ public:
 			}
 		}
 	}
+
+    void shooting(){
+        for(int i = 0;i<allyunitvector.size();i++){
+            for(int j=0;j<unitvector.size();j++){
+                allyunitvector[i]->createBullet(*unitvector[j],bulletvector);
+            }
+        }
+    }
 };

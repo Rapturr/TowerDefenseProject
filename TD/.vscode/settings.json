@@ -45,6 +45,7 @@
         "typeinfo": "cpp",
         "chrono": "cpp",
         "ratio": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "*.rh": "cpp"
     }
 }

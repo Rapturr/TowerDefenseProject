@@ -23,7 +23,7 @@ int main(){
 	sf::Clock myclock;
 	myclock.restart();
 	while(window.isOpen()){
-		if((int)myclock.getElapsedTime().asSeconds() % 177 >= 0){
+		if((int)myclock.getElapsedTime().asSeconds() % 177 == 0){
 			PlaySound(TEXT("../assets/Sounds/BG.wav"),NULL,SND_ASYNC);
 		}
 		while (window.pollEvent(event)){
@@ -38,6 +38,7 @@ int main(){
 		windowChoice.drawsprites(&window);
 		windowChoice.unitMenu(&window);
 		windowChoice.highlight(&window);
+        windowChoice.shooting();
 
 		//windowChoice.renderUnits(&window);
 		//mouse input
