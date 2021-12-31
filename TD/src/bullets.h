@@ -21,11 +21,11 @@ public:
 
 bullets::bullets(sf::Vector2f target,float power)
 {
-    std::cout<<"Pif paf"<<std::endl;
+    //std::cout<<"Pif paf"<<std::endl;
     this->target = target;
     this->power = power;
-    this->bullet.setSize(sf::Vector2f(2,5));
-    this->bullet.setFillColor(sf::Color(0,0,0,200));
+    this->bullet.setSize(sf::Vector2f(20,15));
+    this->bullet.setFillColor(sf::Color::Black);
 }
 
 void bullets::move(){
@@ -40,5 +40,6 @@ bullets::~bullets()
 }
 
 void bullets::drawUnit(sf::RenderWindow *window) {
+    //std::cout<<"Niby rysuje\n";
     window->draw(bullet);
 }

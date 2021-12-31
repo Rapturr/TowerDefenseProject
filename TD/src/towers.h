@@ -19,9 +19,10 @@ public:
     float reload;
     float power;
     
+    int target;
 
     towers(int type, sf::Vector2f position);
-    void createBullet(Units unit, std::vector<bullets> bulletvector);
+    void createBullet(Units unit, std::vector<bullets> *bulletvector, int tgt);
     void drawUnit(sf::RenderWindow *window);
     ~towers();
 };
@@ -46,6 +47,7 @@ towers::towers(int type, sf::Vector2f positionm)
             power = 5;
             break;
     }
+    target = -1;
     collisionArea.setRadius(50);
 }
 
@@ -53,13 +55,20 @@ towers::~towers()
 {
 }
 
-void towers::createBullet(Units unit, std::vector<bullets> bulletvector)
+void towers::createBullet(Units unit, std::vector<bullets> *bulletvector, int tgt)
 {
-
+    
+    if(unit.exists && target != 10000)
+        target = tgt;
+    else if(!unit.exists)
+        target = -1;
     if(collisionArea.getGlobalBounds().intersects(unit.sprite.getGlobalBounds())){
-        std::cout<<"tutaj";
+        std::cout<<"target: "<<target<<"\n";
         bullets bullet(unit.getPos(),this->power);
-        bulletvector.push_back(bullet);
+        if(clock.getElapsedTime().asMilliseconds() >= 250){
+            bulletvector->push_back(bullet);
+            clock.restart();
+        }
     }
 }
 

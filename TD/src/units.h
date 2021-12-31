@@ -25,10 +25,10 @@ private:
 	sf::Clock clock;
 	std::vector<char> moves;
 	int currentmove;
-	bool exists;
 	sf::SoundBuffer sb;
 	sf::Sound sound;
 public:
+	bool exists;
 	sf::Sprite sprite;
 	Units(int flag){
 		clock.restart();

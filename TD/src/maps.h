@@ -596,9 +596,14 @@ public:
 
     void shooting(){
         for(int i = 0;i<allyunitvector.size();i++){
-            for(int j=0;j<unitvector.size();j++){
-                allyunitvector[i]->createBullet(*unitvector[j],bulletvector);
-            }
+			if((!allyunitvector[i]->target) >=0)
+				for(int j=0;j<unitvector.size();j++){
+					allyunitvector[i]->createBullet(*unitvector[j],&bulletvector,i);
+				}
+			else{
+				allyunitvector[i]->createBullet(*unitvector[allyunitvector[i]->target],&bulletvector,allyunitvector[i]->target);
+			}
         }
+		
     }
 };
