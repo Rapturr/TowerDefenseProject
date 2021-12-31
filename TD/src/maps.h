@@ -54,9 +54,11 @@ private:
 	int lastx;
 	int lasty;
 	int unitIt;
+	int unitlimit = 300;
 
 	sf::Clock myclock;
 	sf::Clock tmpclock;
+	sf::Clock bulletclock;
 	
 	void setmap(){
 		switch (choice)
@@ -103,11 +105,15 @@ private:
 	}
 	void moveemyunits(){
 		if(unitIt > 0){
-			for(int i = 0; i < unitIt-1; i++){
+			for(int i = 0; i < unitvector.size(); i++){
 				//if(!unitvector.empty()){
 				unitvector[i]->moveUnits();
 			}
-				
+		}
+		if(bulletclock.getElapsedTime().asMilliseconds()>90){
+			for(int i=0; i<bulletvector.size();i++){
+				bulletvector[i].move();
+			}
 		}
 	}
 	void createemyunits(){
@@ -295,6 +301,7 @@ public:
 			if(choice == 2){
 				if(spritebuttonmap1.getGlobalBounds().contains(translated_pos)){
 					unitIt = 0;
+					unitlimit = 300;
 					tmpclock.restart();
 					changeMap(3);
 					turretTex();
@@ -303,6 +310,7 @@ public:
 				}
 				else if(spritebuttonmap2.getGlobalBounds().contains(translated_pos)){
 					unitIt = 0;
+					unitlimit = 300;
 					tmpclock.restart();
 					changeMap(4);
 					turretTex();
@@ -311,6 +319,7 @@ public:
 				}
 				else if(spritebuttonmap3.getGlobalBounds().contains(translated_pos)){
 					unitIt = 0;
+					unitlimit = 300;
 					tmpclock.restart();
 					changeMap(5);
 					turretTex();
@@ -334,7 +343,7 @@ public:
 	}
 	void createUnits(){
 		if(choice > 2){
-			if(myclock.getElapsedTime().asMilliseconds() > 500 && unitIt < 300){
+			if(myclock.getElapsedTime().asMilliseconds() > 500 && unitIt < unitlimit){
 				myclock.restart();
 				unitvector.push_back(new Units(rand()%3+4));
 				workUnits();
@@ -347,8 +356,11 @@ public:
 		for(int  i = 0; i<allyunitvector.size();i++){
 			allyunitvector[i]->drawUnit(window);
 		}
+        for(int i = 0;i<bulletvector.size();i++){
+            bulletvector[i].drawUnit(window);
+        }
 		if(unitIt > 0){
-			for(int i = 0; i < unitIt-1; i++){
+			for(int i = 0; i < unitvector.size(); i++){
 				//if(!unitvector.empty()){
 					unitvector[i]->drawUnit(window);
 
@@ -357,11 +369,12 @@ public:
 				if(dmg >=1){
 					playerLife -= dmg;
 					unitvector[i]->disappear();
+					unitvector.erase(unitvector.begin()+i);
+					unitlimit-=1;
+					unitIt-=1;
+
 				}
 			}
-            for(int i = 0;i<bulletvector.size();i++){
-                bulletvector[i].drawUnit(window);
-            }
 			if(playerLife < 1){
 				spritebuttonquit.scale(2,2);
 				changeMap(1);
@@ -383,18 +396,14 @@ public:
 	}
 
 	void destroyUnits(){
-		for(int i = 0; i < unitvector.size(); i++){
-			delete unitvector[i];
+		unitvector.clear();
+		bulletvector.clear();
 			//unitvector.erase(unitvector.begin()+i);
-		}
-		unitvector.resize(0);
+		
 	}
 
 	void destroyAllyUnits(){
-		for(int i = 0; i < allyunitvector.size(); i++){
-			delete allyunitvector[i];
-		}
-		allyunitvector.resize(0);
+		allyunitvector.clear();
 	}
 
 	void unitMenu(sf::RenderWindow *window){

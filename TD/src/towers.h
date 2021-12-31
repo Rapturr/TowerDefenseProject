@@ -32,6 +32,7 @@ towers::towers(int type, sf::Vector2f positionm)
 {
     position = positionm;
     texture.loadFromFile("../assets/turretb.png");
+
     sprite.setTexture(texture);
     switch(type){
         case 1://szybka
@@ -64,7 +65,7 @@ void towers::createBullet(Units unit, std::vector<bullets> *bulletvector, int tg
         target = -1;
     if(collisionArea.getGlobalBounds().intersects(unit.sprite.getGlobalBounds())){
         std::cout<<"target: "<<target<<"\n";
-        bullets bullet(unit.getPos(),this->power);
+        bullets bullet(unit.getPos(),this->power, sprite.getPosition());
         if(clock.getElapsedTime().asMilliseconds() >= 250){
             bulletvector->push_back(bullet);
             clock.restart();
