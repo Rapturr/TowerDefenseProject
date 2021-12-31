@@ -15,6 +15,8 @@ public:
 
     sf::Clock clock;
     sf::Time time;
+    sf::SoundBuffer sb;
+    sf::Sound sound;
 
     float reload;
     float power;
@@ -49,7 +51,9 @@ towers::towers(int type, sf::Vector2f positionm)
             break;
     }
     target = -1;
-    collisionArea.setRadius(50);
+    collisionArea.setRadius(100);
+    sb.loadFromFile("../assets/Sounds/FIRE.wav");
+    sound.setBuffer(sb);
 }
 
 towers::~towers()
@@ -64,10 +68,10 @@ void towers::createBullet(Units unit, std::vector<bullets> *bulletvector, int tg
     else if(!unit.exists)
         target = -1;
     if(collisionArea.getGlobalBounds().intersects(unit.sprite.getGlobalBounds())){
-        std::cout<<"target: "<<target<<"\n";
-        bullets bullet(unit.getPos(),this->power, sprite.getPosition());
+        bullets bullet(unit.getPos(),this->power, sprite.getPosition(),target);
         if(clock.getElapsedTime().asMilliseconds() >= 250){
             bulletvector->push_back(bullet);
+            sound.play();
             clock.restart();
         }
     }

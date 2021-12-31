@@ -113,6 +113,20 @@ private:
 		if(bulletclock.getElapsedTime().asMilliseconds()>90){
 			for(int i=0; i<bulletvector.size();i++){
 				bulletvector[i].move();
+				for(int j=0; j<unitvector.size();j++){
+					if(bulletvector[i].bullet.getGlobalBounds().intersects(unitvector[j]->sprite.getGlobalBounds())){
+						if(unitvector[j]->exists){
+							unitvector[j]->hit();
+							bulletvector.erase(bulletvector.begin()+i);
+						}
+						else{
+							unitvector.erase(unitvector.begin()+j);
+						}
+					}
+				}
+				if(bulletvector[i].position.x<0 || bulletvector[i].position.x>1280 || bulletvector[i].position.y<0 || bulletvector[i].position.y>820){
+					bulletvector.erase(bulletvector.begin()+i);
+				}
 			}
 		}
 	}
