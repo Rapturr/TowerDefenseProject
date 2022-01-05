@@ -46,7 +46,6 @@ private:
 	int cash;
 	int playerLife;
 	int points;
-	//0-czysto, 1-droga
 	int placeCheck[32][18];
 	int offset;
 	int index = 0;
@@ -54,7 +53,9 @@ private:
 	int lastx;
 	int lasty;
 	int unitIt;
+	int initialunitlimit = 300;
 	int unitlimit = 300;
+	int killCounter = 0;
 
 	sf::Clock myclock;
 	sf::Clock tmpclock;
@@ -64,9 +65,7 @@ private:
 		switch (choice)
 		{
 		case 1:
-			//texture.loadFromFile("../assets/m1.jpg", sf::IntRect(0,0,1920*1.5,1080*1.5));
 			texture.loadFromFile("../assets/m1.jpg");
-			//texture.loadFromFile("../assets/m1.jpg", sf::IntRect(0,0,600,400));
 			break;
 		case 2:
 			texture.loadFromFile("../assets/m1.jpg");
@@ -105,28 +104,35 @@ private:
 	}
 	void moveemyunits(){
 		if(unitIt > 0){
-			for(int i = 0; i < unitvector.size(); i++){
+			for(int i = 0; i < (int)unitvector.size(); i++){
 				//if(!unitvector.empty()){
 				unitvector[i]->moveUnits();
 			}
 		}
 		if(bulletclock.getElapsedTime().asMilliseconds()>90){
-			for(int i=0; i<bulletvector.size();i++){
+			for(int i=0; i<(int)bulletvector.size();i++){
 				bulletvector[i].move();
-				for(int j=0; j<unitvector.size();j++){
+				for(int j=0; j<(int)unitvector.size();j++){
 					if(bulletvector[i].bullet.getGlobalBounds().intersects(unitvector[j]->sprite.getGlobalBounds())){
 						if(unitvector[j]->exists){
 							unitvector[j]->hit();
-							bulletvector.erase(bulletvector.begin()+i);
-						}
-						else{
-							unitvector.erase(unitvector.begin()+j);
+							if(!bulletvector.empty())
+								bulletvector.erase(bulletvector.begin()+i);
+							if(!unitvector[j]->exists){
+								points+=unitvector[j]->type;
+								unitvector.erase(unitvector.begin()+j);
+								killCounter++;
+								unitlimit-=1;
+								unitIt-=1;
+								cash+=10;
+							}
 						}
 					}
 				}
-				if(bulletvector[i].position.x<0 || bulletvector[i].position.x>1280 || bulletvector[i].position.y<0 || bulletvector[i].position.y>820){
-					bulletvector.erase(bulletvector.begin()+i);
-				}
+				if(!bulletvector.empty())
+					if(bulletvector[i].position.x<0 || bulletvector[i].position.x>1280 || bulletvector[i].position.y<0 || bulletvector[i].position.y>820){
+						bulletvector.erase(bulletvector.begin()+i);
+					}
 			}
 		}
 	}
@@ -311,6 +317,8 @@ public:
 				destroyAllyUnits();
 				changeMap(1);
 				zerowanieTab();
+				killCounter = 0;
+				points = 0;
 			}
 			if(choice == 2){
 				if(spritebuttonmap1.getGlobalBounds().contains(translated_pos)){
@@ -367,14 +375,15 @@ public:
 	}
 
 	void drawUnits(sf::RenderWindow *window){
-		for(int  i = 0; i<allyunitvector.size();i++){
-			allyunitvector[i]->drawUnit(window);
+		for(int  i = 0; i<(int)allyunitvector.size();i++){
+			if(allyunitvector[i] != NULL)
+				allyunitvector[i]->drawUnit(window);
 		}
-        for(int i = 0;i<bulletvector.size();i++){
+        for(int i = 0;i<(int)bulletvector.size();i++){
             bulletvector[i].drawUnit(window);
         }
 		if(unitIt > 0){
-			for(int i = 0; i < unitvector.size(); i++){
+			for(int i = 0; i < (int)unitvector.size(); i++){
 				//if(!unitvector.empty()){
 					unitvector[i]->drawUnit(window);
 
@@ -386,16 +395,19 @@ public:
 					unitvector.erase(unitvector.begin()+i);
 					unitlimit-=1;
 					unitIt-=1;
+					killCounter++;
 
 				}
 			}
-			if(playerLife < 1){
+			if(playerLife < 1 || (killCounter >= initialunitlimit-1)){
 				spritebuttonquit.scale(2,2);
 				changeMap(1);
 				zerowanieTab();
 				playerLife = 30;
 				destroyAllyUnits();
 				destroyUnits();
+				killCounter = 0;
+				points = 0;
 			}
 		}
 		std::string s = std::to_string(playerLife);
@@ -463,7 +475,7 @@ public:
 
 	void placeTurret(sf::Vector2i mpos){
 		//sf::Vector2i mpos = sf::Mouse::getPosition();
-		if(index != 0 && cash > 9){
+		if(index != 0 && cash > 79){
 			sf::Vector2f tmp;
 			bool turretplaced = false;
 			if(mpos.x<1260 && mpos.y>100 && mpos.y < 780){
@@ -473,9 +485,8 @@ public:
 				mpos.y = (mpos.y*(720/18));
 				tmp.x = mpos.x;
 				tmp.y = mpos.y;
-				std::cout<<"placecheck x:"<<(int)mpos.x/(1280/32)<<"   y: "<<(int)mpos.y/(720/18)<<"    =   "<<placeCheck[(int)mpos.x/(1280/32)][(int)mpos.y/(720/18)]<<"\n";
 				if(placeCheck[(int)tmp.x/(1280/32)][(int)tmp.y/(720/18)]==0){
-					for(int i = 0; i < allyunitvector.size(); i++){
+					for(int i = 0; i < (int)allyunitvector.size(); i++){
 						if(tmp == allyunitvector[i]->position){
 							turretplaced = true;
 						}
@@ -491,7 +502,7 @@ public:
                         mposf.x = (float)mpos.x - 25;
                         mposf.y = (float)mpos.y - 25;
                         allyunitvector[allyunitvector.size()-1]->collisionArea.setPosition(mposf);
-						cash -=10;
+						cash -=80;
 					}
 				}
 			}
@@ -618,12 +629,14 @@ public:
 	}
 
     void shooting(){
-        for(int i = 0;i<allyunitvector.size();i++){
+        for(int i = 0;i<(int)allyunitvector.size();i++){
 			if((!allyunitvector[i]->target) >=0)
-				for(int j=0;j<unitvector.size();j++){
+				for(int j=0;j<(int)unitvector.size();j++){
+					if(unitvector[j]->exists)
 					allyunitvector[i]->createBullet(*unitvector[j],&bulletvector,i);
 				}
 			else{
+				if(unitvector[allyunitvector[i]->target]->exists)
 				allyunitvector[i]->createBullet(*unitvector[allyunitvector[i]->target],&bulletvector,allyunitvector[i]->target);
 			}
         }

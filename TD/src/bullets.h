@@ -28,7 +28,6 @@ bullets::bullets(sf::Vector2f target,float power, sf::Vector2f pos, int tid)
     targetid = tid;
     target.x+=10;
     target.y+=10;
-    //std::cout<<"Pif paf"<<std::endl;
     this->target = target;
     this->power = power;
     this->bullet.setSize(sf::Vector2f(6,6));
@@ -36,9 +35,8 @@ bullets::bullets(sf::Vector2f target,float power, sf::Vector2f pos, int tid)
     this->position = pos;
     this->bullet.setPosition(position);
     offset = target - position;
-    offset.x/=50;
-    offset.y/=50;
-    //std::cout<<"x: "<<pos.x<<"  y: "<<pos.y<<"\n";
+    offset.x/=20;
+    offset.y/=20;
 }
 
 void bullets::move(){
@@ -51,6 +49,5 @@ bullets::~bullets()
 }
 
 void bullets::drawUnit(sf::RenderWindow *window) {
-    //std::cout<<"x: "<<bullet.getPosition().x<<"  y: "<<bullet.getPosition().y<<"\n";
     window->draw(bullet);
 }

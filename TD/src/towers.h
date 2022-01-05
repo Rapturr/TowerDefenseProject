@@ -50,7 +50,7 @@ towers::towers(int type, sf::Vector2f positionm)
             power = 5;
             break;
     }
-    target = -1;
+    target = 10000;
     collisionArea.setRadius(100);
     sb.loadFromFile("../assets/Sounds/FIRE.wav");
     sound.setBuffer(sb);
@@ -66,7 +66,7 @@ void towers::createBullet(Units unit, std::vector<bullets> *bulletvector, int tg
     if(unit.exists && target != 10000)
         target = tgt;
     else if(!unit.exists)
-        target = -1;
+        target = 10000;
     if(collisionArea.getGlobalBounds().intersects(unit.sprite.getGlobalBounds())){
         bullets bullet(unit.getPos(),this->power, sprite.getPosition(),target);
         if(clock.getElapsedTime().asMilliseconds() >= 250){

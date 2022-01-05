@@ -18,7 +18,6 @@ private:
 	int movedir = 1;
 	bool switcher;
 	//1-carrot,2-tomato,3-potato
-	int type;
 	int lastx;
 	int lasty;
 	//sf::Music music;
@@ -28,6 +27,7 @@ private:
 	sf::SoundBuffer sb;
 	sf::Sound sound;
 public:
+	int type;
 	bool exists;
 	sf::Sprite sprite;
 	Units(int flag){
@@ -67,6 +67,7 @@ public:
 		default:
 			break;
 		}
+		type=flag;
 		currentmove = 0;
 		sound.setBuffer(sb);
 	}
